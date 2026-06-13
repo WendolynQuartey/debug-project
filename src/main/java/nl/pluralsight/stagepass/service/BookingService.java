@@ -1,5 +1,6 @@
 package nl.pluralsight.stagepass.service;
 
+import nl.pluralsight.stagepass.exception.GlobalExceptionHandler;
 import nl.pluralsight.stagepass.exception.InsufficientSeatsException;
 import nl.pluralsight.stagepass.model.Booking;
 import nl.pluralsight.stagepass.model.Concert;
@@ -7,6 +8,7 @@ import nl.pluralsight.stagepass.repository.BookingRepository;
 import nl.pluralsight.stagepass.repository.ConcertRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,20 +40,23 @@ public class BookingService {
 
     @Transactional
     public Booking createBooking(Booking booking) {
-        Concert concert = concertRepository.findById(booking.getConcert().getId())
-                .orElseThrow(() -> new RuntimeException("Concert not found"));
+            Concert concert = concertRepository.findById(booking.getConcert().getId())
+                    .orElseThrow(() -> new RuntimeException("Concert not found"));
 
-        concert.setAvailableSeats(concert.getAvailableSeats() - booking.getNumberOfTickets());
+            if (concert.getAvailableSeats() < booking.getNumberOfTickets()){
+                throw new InsufficientSeatsException("❌Tickets exceeds available seating");
+            }
+            concert.setAvailableSeats(concert.getAvailableSeats() - booking.getNumberOfTickets());
 
-        // Compute total price
-        BigDecimal numOfTickets = BigDecimal.valueOf(booking.getNumberOfTickets());
-        booking.setTotalPrice(concert.getTicketPrice().multiply(numOfTickets));
+            // Compute total price
+            BigDecimal numOfTickets = BigDecimal.valueOf(booking.getNumberOfTickets());
+            booking.setTotalPrice(concert.getTicketPrice().multiply(numOfTickets));
 
-        // Set booking date and concert reference
-        booking.setBookingDate(LocalDate.now());
-        booking.setConcert(concert);
+            // Set booking date and concert reference
+            booking.setBookingDate(LocalDate.now());
+            booking.setConcert(concert);
 
-        return bookingRepository.save(booking);
+            return bookingRepository.save(booking);
     }
 
     public boolean cancelBooking(Long id) {
