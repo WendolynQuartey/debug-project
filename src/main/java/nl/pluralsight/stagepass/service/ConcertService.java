@@ -1,5 +1,6 @@
 package nl.pluralsight.stagepass.service;
 
+import nl.pluralsight.stagepass.model.Booking;
 import nl.pluralsight.stagepass.model.Concert;
 import nl.pluralsight.stagepass.repository.ConcertRepository;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,8 @@ public class ConcertService {
     public Optional<Concert> getConcertById(Long id) {
         return concertRepository.findById(id);
     }
+
+    public List<Concert> getConcertsByArtist(Long artistId) {return concertRepository.findByArtistId(artistId);}
 
     public Concert createConcert(Concert concert) {
         return concertRepository.save(concert);

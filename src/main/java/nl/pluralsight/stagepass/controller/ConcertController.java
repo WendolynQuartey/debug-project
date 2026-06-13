@@ -1,9 +1,10 @@
 package nl.pluralsight.stagepass.controller;
 
-import jakarta.validation.Valid;
+import nl.pluralsight.stagepass.model.Booking;
 import nl.pluralsight.stagepass.model.Concert;
 import nl.pluralsight.stagepass.service.BookingService;
 import nl.pluralsight.stagepass.service.ConcertService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,10 +34,15 @@ public class ConcertController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/artist/{artistId}")
+    public ResponseEntity<List<Concert>> getConcertsByArtist(@PathVariable Long artistId) {
+        return ResponseEntity.ok(concertService.getConcertsByArtist(artistId));
+    }
+
     @PostMapping
     public ResponseEntity<Concert> createConcert(@RequestBody Concert concert) {
         Concert created = concertService.createConcert(concert);
-        return ResponseEntity.status(201).build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PutMapping("/{id}")
